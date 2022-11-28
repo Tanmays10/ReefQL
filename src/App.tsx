@@ -14,6 +14,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 import Header from './components/Header';
 import { Editor } from './components/Editor';
+import { IDE } from './pages/IDE';
+import NotFound from './pages/NotFound';
+import Dashboard from './pages/Dashboard';
 
 const fetcher = createGraphiQLFetcher({
   url: 'https://reefscan.com/graphql',
@@ -25,7 +28,12 @@ export default function App() {
     <>
       <Router>
         <Header />
-        <Editor />
+        <Routes>
+          <Route path='/' element={<IDE />} />
+          <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='*' element={<NotFound />} />
+          {/* <Editor /> */}
+        </Routes>
       </Router>
 
     </>

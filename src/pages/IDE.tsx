@@ -6,11 +6,7 @@ import { Editor } from "../components/Editor";
 export function IDE() {
   return (
     <>
-      <Container>
-        <Row>
-          <Col><Editor /></Col>
-        </Row>
-      </Container>
+      <Editor />
     </>
   );
 }

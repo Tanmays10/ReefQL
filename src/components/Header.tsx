@@ -11,7 +11,7 @@ export default function Header() {
       <Container>
         <Navbar.Brand href="#home">
           <Nav className="me-auto">
-            <Nav.Link active>
+            <Nav.Link active as={Link} to="/"  >
               <img
                 alt="ReefQL"
                 src={logo}
@@ -21,7 +21,7 @@ export default function Header() {
               />{" "}
               ReefQL
             </Nav.Link>
-
+            <Nav.Link  as={Link} to="/dashboard" >Dashboard</Nav.Link>
           </Nav>
         </Navbar.Brand>
       </Container>
