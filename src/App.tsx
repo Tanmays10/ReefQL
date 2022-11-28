@@ -15,32 +15,36 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Header from './components/Header';
 
 const fetcher = createGraphiQLFetcher({
-  url: 'https://api.spacex.land/graphql/',
+  url: 'https://reefscan.com/graphql',
 });
 
 const defaultOperations =
   localStorage.getItem('operations') ??
   `
-# cmd/ctrl + return/enter will execute the op,
-# same in variables editor below
-# also available via context menu & f1 command palette
-
-query($limit: Int!) {
-    payloads(limit: $limit) {
-        customer
+  # cmd/ctrl + return/enter will execute the op,
+  # same in variables editor below
+  # also available via context menu & f1 command palette
+  
+  query SampleQuery($limit: Int) {
+    block(limit: $limit) {
+      hash
+      id
+      parent_hash
+  
     }
-}
+  }
+  
 `;
 
 const defaultVariables =
   localStorage.getItem('variables') ??
   `
- {
-     // limit will appear here as autocomplete,
-     // and because the default value is 0, will
-     // complete as such
-     "limit": false
- }
+  {
+    // limit will appear here as autocomplete,
+    // and because the default value is 0, will
+    // complete as such
+    "limit": 5
+}
 `;
 
 const getSchema = async () =>
@@ -57,17 +61,25 @@ const getOrCreateModel = (uri: string, value: string) => {
 };
 
 const execOperation = async function () {
+  console.log("Exec")
   const variables = editor.getModel(Uri.file('variables.json'))!.getValue();
+  console.log("Exec1")
+
   const operations = editor.getModel(Uri.file('operation.graphql'))!.getValue();
+  console.log("Exec2")
+
   const resultsModel = editor.getModel(Uri.file('results.json'));
+  console.log("Exec3")
+
   const result = await fetcher({
     query: operations,
-    variables: JSON.stringify(JSONC.parse(variables)),
+    variables: JSONC.parse(variables),
   });
   // TODO: this demo only supports a single iteration for http GET/POST,
   // no multipart or subscriptions yet.
-  // @ts-expect-error
+  //@ts-expect-error
   const data = await result.next();
+  console.log(data);
 
   resultsModel?.setValue(JSON.stringify(data.value, null, 2));
 };
