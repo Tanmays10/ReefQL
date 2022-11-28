@@ -1,0 +1,18 @@
+import{j as w,c as C,K as E,a as R,l as V,R as a,r as m,e as u,U as l,i as I,g as L,p as D,b as A}from"./vendor.e4ea881c.js";const k=function(){const o=document.createElement("link").relList;if(o&&o.supports&&o.supports("modulepreload"))return;for(const e of document.querySelectorAll('link[rel="modulepreload"]'))n(e);new MutationObserver(e=>{for(const t of e)if(t.type==="childList")for(const d of t.addedNodes)d.tagName==="LINK"&&d.rel==="modulepreload"&&n(d)}).observe(document,{childList:!0,subtree:!0});function s(e){const t={};return e.integrity&&(t.integrity=e.integrity),e.referrerpolicy&&(t.referrerPolicy=e.referrerpolicy),e.crossorigin==="use-credentials"?t.credentials="include":e.crossorigin==="anonymous"?t.credentials="omit":t.credentials="same-origin",t}function n(e){if(e.ep)return;e.ep=!0;const t=s(e);fetch(e.href,t)}};k();function b(r,o){let s;return function(...n){s&&window.clearTimeout(s),s=window.setTimeout(()=>{s=null,o(n)},r)}}const c=w.exports.jsx,S=w.exports.jsxs,M=C({url:"https://api.spacex.land/graphql/"}),J=localStorage.getItem("operations")??`
+# cmd/ctrl + return/enter will execute the op,
+# same in variables editor below
+# also available via context menu & f1 command palette
+
+query($limit: Int!) {
+    payloads(limit: $limit) {
+        customer
+    }
+}
+`,K=localStorage.getItem("variables")??`
+ {
+     // limit will appear here as autocomplete,
+     // and because the default value is 0, will
+     // complete as such
+     "limit": false
+ }
+`,Q=async()=>M({query:L(),operationName:"IntrospectionQuery"}),f=(r,o)=>u.getModel(l.file(r))??u.createModel(o,r.split(".").pop(),l.file(r)),F=async function(){const r=u.getModel(l.file("variables.json")).getValue(),o=u.getModel(l.file("operation.graphql")).getValue(),s=u.getModel(l.file("results.json")),e=await(await M({query:o,variables:JSON.stringify(D(r))})).next();s?.setValue(JSON.stringify(e.value,null,2))},x={id:"graphql-run",label:"Run Operation",contextMenuOrder:0,contextMenuGroupId:"graphql",keybindings:[E.CtrlCmd|R.Enter],run:F};V.json.jsonDefaults.setDiagnosticsOptions({allowComments:!0,trailingCommas:"ignore"});const g=(r,o)=>u.create(r.current,o);function G(){const r=a.useRef(null),o=a.useRef(null),s=a.useRef(null),[n,e]=a.useState(null),[t,d]=a.useState(null),[O,q]=a.useState(null),[h,j]=a.useState(null),[y,v]=a.useState(!1);return m.exports.useEffect(()=>{const i=f("operation.graphql",J),p=f("variables.json",K),N=f("results.json","{}");n??e(g(r,{theme:"vs-dark",model:i,language:"graphql"})),t??d(g(o,{theme:"vs-dark",model:p})),O??q(g(s,{theme:"vs-dark",model:N,readOnly:!0,smoothScrolling:!0})),i.onDidChangeContent(b(300,()=>{localStorage.setItem("operations",i.getValue())})),p.onDidChangeContent(b(300,()=>{localStorage.setItem("variables",p.getValue())}))},[]),m.exports.useEffect(()=>{n?.addAction(x),t?.addAction(x)},[t]),m.exports.useEffect(()=>{!h&&!y&&(v(!0),Q().then(i=>{if(!("data"in i))throw Error("this demo does not support subscriptions or http multipart yet");I({diagnosticSettings:{validateVariablesJSON:{[l.file("operation.graphql").toString()]:[l.file("variables.json").toString()]},jsonDiagnosticSettings:{validate:!0,schemaValidation:"error",allowComments:!0,trailingCommas:"ignore"}},schemas:[{introspectionJSON:i.data,uri:"myschema.graphql"}]}),j(i.data)}).then(()=>v(!1)))},[h,y]),S("div",{id:"wrapper",children:[S("div",{id:"left-pane",className:"pane",children:[c("div",{ref:r,className:"editor"}),c("div",{ref:o,className:"editor"})]}),c("div",{id:"right-pane",className:"pane",children:c("div",{ref:s,className:"editor"})})]})}A.render(c(a.StrictMode,{children:c(G,{})}),document.getElementById("root"));
