@@ -1,17 +1,11 @@
 import { FC, useRef, useState, useEffect } from "react";
-import { getIntrospectionQuery, IntrospectionQuery } from "graphql";
-import {
-  Uri,
-  editor,
-  KeyMod,
-  KeyCode,
-  languages,
-} from "monaco-editor/esm/vs/editor/editor.api.js";
-import { initializeMode } from "monaco-graphql/esm/initializeMode";
-import { createGraphiQLFetcher } from "@graphiql/toolkit";
-import { debounce } from "./debounce";
+import { getIntrospectionQuery, IntrospectionQuery } from 'graphql';
+import { Uri, editor, KeyMod, KeyCode, languages } from 'monaco-editor';
+import { initializeMode } from 'monaco-graphql/esm/initializeMode';
+import { createGraphiQLFetcher } from '@graphiql/toolkit';
 import * as JSONC from 'jsonc-parser';
-import MEditor from "@monaco-editor/react";
+import { debounce } from './debounce';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 interface Props {
   options?: Options;
@@ -23,46 +17,71 @@ interface Options {
 }
 
 const fetcher = createGraphiQLFetcher({
-  url: "https://reefscan.com/graphql",
+  url: 'https://reefscan.com/graphql',
 });
 
-const defaultOperations =
-  localStorage.getItem("operations") ??
-  `
-# cmd/ctrl + return/enter will execute the op,
-# same in variables editor below
-# also available via context menu & f1 command palette
 
-query($limit: Int!) {
-    payloads(limit: $limit) {
-        customer
+const defaultOperations =
+  localStorage.getItem('operations') ??
+  `
+  # cmd/ctrl + return/enter will execute the op,
+  # same in variables editor below
+  # also available via context menu & f1 command palette
+  
+  query SampleQuery($limit: Int) {
+    block(limit: $limit) {
+      hash
+      id
+      parent_hash
+  
     }
-}
+  }
+  
 `;
 
 const defaultVariables =
-  localStorage.getItem("variables") ??
+  localStorage.getItem('variables') ??
   `
- {
-     // limit will appear here as autocomplete,
-     // and because the default value is 0, will
-     // complete as such
-     "limit": false
- }
+  {
+    // limit will appear here as autocomplete,
+    // and because the default value is 0, will
+    // complete as such
+    "limit": 5
+}
 `;
 
+const getSchema = async () =>
+  fetcher({
+    query: getIntrospectionQuery(),
+    operationName: 'IntrospectionQuery',
+  });
+const getOrCreateModel = (uri: string, value: string) => {
+  return (
+    editor.getModel(Uri.file(uri)) ??
+    editor.createModel(value, uri.split('.').pop(), Uri.file(uri))
+  );
+};
 const execOperation = async function () {
+  console.log("Exec")
   const variables = editor.getModel(Uri.file('variables.json'))!.getValue();
+  console.log("Exec1")
+
   const operations = editor.getModel(Uri.file('operation.graphql'))!.getValue();
+  console.log("Exec2")
+
   const resultsModel = editor.getModel(Uri.file('results.json'));
+  console.log("Exec3")
+
   const result = await fetcher({
     query: operations,
-    variables: JSON.stringify(JSONC.parse(variables)),
+    variables: JSONC.parse(variables),
   });
+
   // TODO: this demo only supports a single iteration for http GET/POST,
   // no multipart or subscriptions yet.
-  // @ts-expect-error
+  //@ts-expect-error
   const data = await result.next();
+  console.log(data);
 
   resultsModel?.setValue(JSON.stringify(data.value, null, 2));
 };
@@ -79,18 +98,12 @@ const queryAction = {
   run: execOperation,
 };
 
-const getOrCreateModel = (uri: string, value: string) => {
-  return (
-    editor.getModel(Uri.file(uri)) ??
-    editor.createModel(value, uri.split(".").pop(), Uri.file(uri))
-  );
-};
+// set these early on so that initial variables with comments don't flash an error
+languages.json.jsonDefaults.setDiagnosticsOptions({
+  allowComments: true,
+  trailingCommas: 'ignore',
+});
 
-const getSchema = async () =>
-  fetcher({
-    query: getIntrospectionQuery(),
-    operationName: 'IntrospectionQuery',
-  });
 
 const createEditor = (
   ref: React.MutableRefObject<null>,
@@ -156,66 +169,57 @@ export const Editor: FC<Props> = ({ options, value }) => {
   useEffect(() => {
     queryEditor?.addAction(queryAction);
     variablesEditor?.addAction(queryAction);
-  }, [queryAction]);
+  }, [variablesEditor, queryEditor]);
   /**
    * Handle the initial schema load
    */
 
 
   useEffect(() => {
-    if(!schema && !loading){
+    if (!schema && !loading) {
       setLoading(true);
       getSchema()
-      .then((data)=> {
-        if (!('data' in data)) {
-          throw Error(
-            'this demo does not support subscriptions or http multipart yet'
-          );
-        }
+        .then((data) => {
+          if (!('data' in data)) {
+            throw Error(
+              'this demo does not support subscriptions or http multipart yet'
+            );
+          }
 
-        initializeMode({
-          diagnosticSettings: {
-            validateVariablesJSON: {
-              [Uri.file('operation.graphql').toString()]: [
-                Uri.file('variables.json').toString(),
-              ],
+          initializeMode({
+            diagnosticSettings: {
+              validateVariablesJSON: {
+                [Uri.file('operation.graphql').toString()]: [
+                  Uri.file('variables.json').toString(),
+                ],
+              },
+              jsonDiagnosticSettings: {
+                validate: true,
+                schemaValidation: 'error',
+                // set these again, because we are entirely re-setting them here
+                allowComments: true,
+                trailingCommas: 'ignore',
+              }
             },
-            jsonDiagnosticSettings: {
-              validate: true,
-              schemaValidation: 'error',
-              // set these again, because we are entirely re-setting them here
-              allowComments: true,
-              trailingCommas: 'ignore',
-            }
-          },
-          schemas: [
-            {
-              introspectionJSON: data.data as unknown as IntrospectionQuery,
-              uri: 'myschema.graphql',
-            },
-          ],
-        });
-        setSchema(data.data);
-        return;
+            schemas: [
+              {
+                introspectionJSON: data.data as unknown as IntrospectionQuery,
+                uri: 'myschema.graphql',
+              },
+            ],
+          });
+          setSchema(data.data);
+          return;
 
-      })
-      .then(() => setLoading(false));
+        })
+        .then(() => setLoading(false));
     }
   }, [schema, loading])
-
-  // const editorRef = useRef(null);
-  // function handleEditorDidMount(editor :any, monaco: any) {
-  //   editorRef.current = editor;
-  // }
-
-  // function handleEditorChange(value, event) {
-  //   console.log("here is the current model value:", value);
-  // }
 
   return (
     <div id="wrapper">
       <div id="left-pane" className="pane">
-        <div ref={opsRef} className="editor"  />
+        <div ref={opsRef} className="editor" />
         <div ref={varsRef} className="editor" />
       </div>
       <div id="right-pane" className="pane">
