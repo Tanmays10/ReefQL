@@ -1,10 +1,18 @@
 import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
+
 import { getIntrospectionQuery, IntrospectionQuery } from 'graphql';
 import { Uri, editor, KeyMod, KeyCode, languages } from 'monaco-editor';
 import { initializeMode } from 'monaco-graphql/esm/initializeMode';
 import { createGraphiQLFetcher } from '@graphiql/toolkit';
 import * as JSONC from 'jsonc-parser';
 import { debounce } from './debounce';
+import "bootstrap/dist/css/bootstrap.min.css";
+
+
+
+import Header from './components/Header';
 
 const fetcher = createGraphiQLFetcher({
   url: 'https://api.spacex.land/graphql/',
@@ -52,7 +60,6 @@ const execOperation = async function () {
   const variables = editor.getModel(Uri.file('variables.json'))!.getValue();
   const operations = editor.getModel(Uri.file('operation.graphql'))!.getValue();
   const resultsModel = editor.getModel(Uri.file('results.json'));
-  // @ts-expect-error
   const result = await fetcher({
     query: operations,
     variables: JSON.stringify(JSONC.parse(variables)),
@@ -195,6 +202,9 @@ export default function App() {
     }
   }, [schema, loading]);
   return (
+    <>
+    <Router>
+    <Header/>
     <div id="wrapper">
       <div id="left-pane" className="pane">
         <div ref={opsRef} className="editor" />
@@ -204,5 +214,8 @@ export default function App() {
         <div ref={resultsRef} className="editor" />
       </div>
     </div>
+    </Router>
+    
+    </>
   );
 }
