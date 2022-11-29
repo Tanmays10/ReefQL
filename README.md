@@ -2,12 +2,15 @@
 
 ![](https://i.imgur.com/6fSvLIm.jpg)
 
+
+Reef Native Sandbox for developer toolings for interactions and analytics of reef chain.
+
 This repository is a submission for the 
 This project is part of submission for the [Online Hackathon - Web3 Hackdays ](https://covalenthq.notion.site/Boomi-vs-Bufficorn-NFT-Battle-Workshop-w-Covalent-ETHDenver-2687bc5431d3420a9ccac9ac75256db6) organised by [Reef](https://reef.io/) 
 ### Project Description
 I have built a developer site for interacting with reef onchain data. 
 - GraphQL IDE
-- Dashboard
+- Dashboard (Future)
 
 
 ### Live Demo: [here](https://reefql-tanmays10.vercel.app/)
